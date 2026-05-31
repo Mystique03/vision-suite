@@ -86,6 +86,9 @@ async def run(feature: str, file: UploadFile, background_tasks: BackgroundTasks,
         "tracking":     ("track_video",       lambda r: [d["confidence"] for d in r[1]], lambda r: _items_counts(r, unique=True)),
     }
 
+    conf = float(conf)  # ensure plain Python float (ultralytics rejects numpy float32)
+    iou = float(iou)
+
     content = await file.read()
 
     input_metadata = {

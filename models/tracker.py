@@ -24,7 +24,11 @@ if not os.path.exists(_onnx):
     YOLO(_pt).export(format="onnx", imgsz=640, simplify=True)
 model = YOLO(_onnx, task="detect")
 
+MIN_FRAMES = 10  # an ID must persist this many frames to be counted (filters blips / ID switches)
+
 def track_video(video_path, output_path, conf=0.4, iou=0.7):
+    conf, iou = float(conf), float(iou)  # ultralytics rejects numpy float32
+
     cap = cv.VideoCapture(video_path)
     if not cap.isOpened():
         raise RuntimeError(f"Cannot open video: {video_path}")
@@ -37,7 +41,10 @@ def track_video(video_path, output_path, conf=0.4, iou=0.7):
     out = cv.VideoWriter(output_path, fourcc, fps, (width, height))
 
     detections = []
-    seen = defaultdict(set)  # label -> set of unique track_ids
+    id_frames = defaultdict(int)       # track_id -> frames seen
+    id_label = {}                      # track_id -> label
+    confirmed = defaultdict(set)       # label -> set of confirmed track_ids (>= MIN_FRAMES)
+    first = True  # frame 0 starts a fresh tracker (resets IDs/state per video)
 
     try:
         while cap.isOpened():
@@ -45,10 +52,11 @@ def track_video(video_path, output_path, conf=0.4, iou=0.7):
             if not ret:
                 break
 
-            results = model.track(frame, tracker="botsort.yaml", persist=True, conf=conf, iou=iou, verbose=False)
+            results = model.track(frame, tracker="botsort.yaml", persist=not first, conf=conf, iou=iou, verbose=False)
+            first = False
 
             if results[0].boxes.id is None:
-                _draw_counts(frame, seen)
+                _draw_counts(frame, confirmed)
                 out.write(frame)
                 continue
 
@@ -57,22 +65,30 @@ def track_video(video_path, output_path, conf=0.4, iou=0.7):
             classes = results[0].boxes.cls.cpu().numpy()
             confs = results[0].boxes.conf.cpu().numpy()
 
-            for box, id, conf, cls in zip(boxes, track_ids, confs, classes):
+            for box, track_id, box_conf, cls in zip(boxes, track_ids, confs, classes):
+                track_id = int(track_id)
                 label = model.names[int(cls)]
-                seen[label].add(int(id))
+                id_label[track_id] = label
+                id_frames[track_id] += 1
+                if id_frames[track_id] == MIN_FRAMES:   # crossed persistence threshold -> count it
+                    confirmed[label].add(track_id)
                 detections.append({
                     "label": label,
-                    "confidence": round(float(conf), 2),
+                    "confidence": round(float(box_conf), 2),
                     "box": [int(x) for x in box],
-                    "track_id": int(id)
+                    "track_id": track_id
                 })
 
             annotated_frame = results[0].plot()
-            _draw_counts(annotated_frame, seen)
+            _draw_counts(annotated_frame, confirmed)
             out.write(annotated_frame)
     finally:
         cap.release()
         out.release()
+
+    # keep only detections from confirmed IDs so downstream counts match the overlay
+    confirmed_ids = {tid for ids in confirmed.values() for tid in ids}
+    detections = [d for d in detections if d["track_id"] in confirmed_ids]
 
     return output_path, detections
 

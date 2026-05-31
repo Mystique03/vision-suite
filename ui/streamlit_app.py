@@ -10,7 +10,7 @@ FEATURES = ["classification", "caption", "detection", "segmentation", "tracking"
 IMAGE_ONLY = {"classification", "caption"}
 VIDEO_ONLY = {"tracking"}
 
-st.set_page_config(layout="wide", page_title="CV Platform", page_icon="🔍")
+st.set_page_config(layout="wide", page_title="Vision Suite", page_icon="🔍")
 
 st.markdown(
     """
@@ -68,8 +68,8 @@ def render_items(items):
     return f'<div class="det-list">{rows}</div>'
 
 
-st.title("🔍 CV Platform")
-st.caption("YOLO26 inference — detection, segmentation, pose, tracking, classification & captioning")
+st.title("Vision Suite - CV Inference Platform")
+st.caption("Features — Detection, Segmentation, Pose Estimation, Object Tracking & Counting, Classification & Image Captioning")
 
 # ---------------- SIDEBAR: CONTROLS ----------------
 with st.sidebar:
@@ -86,7 +86,7 @@ with st.sidebar:
     iou = st.slider("IoU", 0.0, 1.0, 0.7, 0.05,
                     help="IoU threshold for Non-Maximum Suppression.")
     if feature in IMAGE_ONLY:
-        st.caption(f"ℹ️ Confidence/IoU don't apply to {feature}.")
+        st.caption(f"Confidence/IoU don't apply to {feature}.")
 
 left, right = st.columns(2, gap="large")
 
@@ -94,13 +94,13 @@ left, right = st.columns(2, gap="large")
 with left:
     with st.container(border=True):
         st.markdown('<div class="card-title">Input</div>', unsafe_allow_html=True)
-        st.markdown('<div class="card-sub">Pick a sample or upload in the sidebar, then Run.</div>',
+        st.markdown('<div class="card-sub">Pick a sample or upload a file.</div>',
                     unsafe_allow_html=True)
 
         c1, c2 = st.columns(2)
-        if c1.button("🖼️ Sample image", use_container_width=True):
+        if c1.button("🖼️ Sample image", width="stretch"):
             set_input((SAMPLES / "sample.jpg").read_bytes(), "sample.jpg", "image/jpeg")
-        if c2.button("🎬 Sample video", use_container_width=True):
+        if c2.button("🎬 Sample video", width="stretch"):
             set_input((SAMPLES / "sample.mp4").read_bytes(), "sample.mp4", "video/mp4")
 
         # preview
@@ -108,23 +108,23 @@ with left:
             if ss.file_type and ss.file_type.startswith("video"):
                 st.video(ss.file_bytes)
             else:
-                st.image(ss.file_bytes, use_container_width=True)
+                st.image(ss.file_bytes, width="stretch")
         else:
             st.markdown('<div class="empty">No file selected.</div>', unsafe_allow_html=True)
 
-        run = st.button("Run", type="primary", use_container_width=True)
+        run = st.button("Run", type="primary", width="stretch")
 
 # ---------------- RUN ----------------
 if run:
     if not ss.file_bytes:
-        ss.result = {"error": "Upload a file or pick a sample first."}
+        ss.result = {"error": "Upload a file first."}
     elif feature in VIDEO_ONLY and not (ss.file_type or "").startswith("video"):
         ss.result = {"error": "Tracking needs a video file."}
     elif feature in IMAGE_ONLY and (ss.file_type or "").startswith("video"):
         ss.result = {"error": "Classification works on images only."}
     else:
         with right:
-            with st.spinner("Running inference… (video may take a while)"):
+            with st.spinner("Running inference… May take a while :)"):
                 try:
                     resp = requests.post(
                         API,
@@ -167,29 +167,29 @@ with right:
         latency = res.get("latency") if res else None
         badge = f'<span class="badge">{latency} ms</span>' if latency is not None else ""
         st.markdown(f'<div class="card-title">Result {badge}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="card-sub">Annotated output and detections.</div>',
+        st.markdown('<div class="card-sub">Annotated output!</div>',
                     unsafe_allow_html=True)
 
         if not res:
-            st.markdown('<div class="empty">Run an analysis to see results.</div>',
+            st.markdown('<div class="empty">Try any feature to see results.</div>',
                         unsafe_allow_html=True)
         elif "error" in res:
             st.error(res["error"])
         elif res["kind"] == "caption":
-            st.image(res["media"], use_container_width=True)
+            st.image(res["media"], width="stretch")
             st.markdown(f'<div class="caption-text">“{res["text"]}”</div>',
                         unsafe_allow_html=True)
         elif res["kind"] == "classification":
             st.markdown(render_items(res["items"]), unsafe_allow_html=True)
         else:
             if res["kind"] == "image":
-                st.image(res["media"], use_container_width=True)
-                st.download_button("⬇️ Download image", res["media"],
+                st.image(res["media"], width="stretch")
+                st.download_button(" Download image", res["media"],
                                    file_name="result.jpg", mime="image/jpeg",
-                                   use_container_width=True)
+                                   width="stretch")
             elif res["kind"] == "video":
                 st.video(res["media"])
-                st.download_button("⬇️ Download video", res["media"],
+                st.download_button(" Download video", res["media"],
                                    file_name="result.mp4", mime="video/mp4",
-                                   use_container_width=True)
+                                   width="stretch")
             st.markdown(render_items(res["items"]), unsafe_allow_html=True)

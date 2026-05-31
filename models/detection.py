@@ -23,14 +23,14 @@ def detect(image, conf=0.25, iou=0.7):
     if len(output[0].boxes) == 0: # no detections
         return results.plot(), []
 
-    for box, conf, cls in zip(
+    for box, box_conf, cls in zip(
         results.boxes.xyxy.cpu().numpy(),
         results.boxes.conf.cpu().numpy(),
         results.boxes.cls.cpu().numpy()
     ):
         detections.append({
             "label": labels[int(cls)],
-            "confidence": round(float(conf), 2),
+            "confidence": round(float(box_conf), 2),
             "box": [int(x) for x in box]
         })
     annotated_frame = results.plot()
@@ -64,14 +64,14 @@ def detect_video(video_path, output_path, conf=0.25, iou=0.7):
                 out.write(frame)
                 continue
 
-            for box, conf, cls in zip(
+            for box, box_conf, cls in zip(
                 results.boxes.xyxy.cpu().numpy(),
                 results.boxes.conf.cpu().numpy(),
                 results.boxes.cls.cpu().numpy()
             ):
                 detections.append({
                     "label": model.names[int(cls)],
-                    "confidence": round(float(conf), 2),
+                    "confidence": round(float(box_conf), 2),
                     "box": [int(x) for x in box]
                 })
 

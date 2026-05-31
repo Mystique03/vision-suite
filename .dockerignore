@@ -1,0 +1,31 @@
+# Virtual envs / caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Git
+.git/
+.gitignore
+
+# Local-only data & logs (not needed in image)
+test-data/
+wandb/
+*.log
+
+# Model weights — pre-baked at build via from_pretrained / ONNX export
+weights/
+
+# Docs / screenshots (not needed at runtime)
+docs/
+
+# Secrets — never bake into image (use HF Space secrets instead)
+.env
+*.env
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,5 +1,5 @@
 ---
-title: CV Platform
+title: Vision Suite
 emoji: 🔍
 colorFrom: blue
 colorTo: indigo
@@ -10,11 +10,11 @@ pinned: false
 
 <div align="center">
 
-# 🔍 CV Platform
+# Vision Suite - CV Inference Platform
 
 ### A multi-task computer-vision inference platform — six vision tasks, one clean interface, CPU-ready.
 
-Object detection · Instance segmentation · Pose estimation · Multi-object tracking · Image classification · Image captioning
+Image Captioning | Object detection | Instance segmentation | Pose estimation | Multi-object tracking & counting | Image classification 
 
 <br/>
 
@@ -30,11 +30,11 @@ Object detection · Instance segmentation · Pose estimation · Multi-object tra
 
 ---
 
-## ✨ Overview
+##  Overview
 
-**CV Platform** turns six computer-vision tasks into a single, deploy-ready web app. Upload an
+**Vision Suite** turns six computer-vision tasks into a single, deploy-ready web app. Upload an
 image or video, pick a task, tune the thresholds, and get an annotated result with a live
-detections breakdown — all running on commodity **CPU**, no GPU required.
+detections breakdown and the good news - all running on **CPU**, no GPU required.
 
 Built around **YOLO26** exported to **ONNX Runtime** for fast CPU inference, with a **BLIP**
 vision-language model for natural-language image captioning.
@@ -42,18 +42,22 @@ vision-language model for natural-language image captioning.
 <!-- ───────────────────────────────────────────────────────────── -->
 <!-- TODO: replace the placeholders below with real screenshots / GIFs -->
 
-## 🎬 Demo
+##  Demo
 
 <div align="center">
 
+![UI overview](docs/samples/ui.png)
+
+*Interface — sidebar controls, live preview, results card*
+
+<br/>
+
 | | |
 |:--:|:--:|
-| ![UI overview](docs/samples/ui.png) | ![Detection](docs/samples/detection.png) |
-| **Interface** — sidebar controls, live preview, results | **Detection** — boxes + confidence list |
-| ![Segmentation](docs/samples/segmentation.png) | ![Pose](docs/samples/pose.png) |
-| **Segmentation** — instance masks | **Pose** — keypoint skeletons |
-| ![Tracking](docs/samples/tracking.gif) | ![Captioning](docs/samples/caption.png) |
-| **Tracking** — IDs + unique object counts | **Captioning** — BLIP scene description |
+| ![Detection](docs/samples/detection.gif) | ![Segmentation](docs/samples/segment.gif) |
+| **Detection** — boxes + confidence list | **Segmentation** — instance masks |
+| ![Pose](docs/samples/pose.jpg) | ![Captioning](docs/samples/caption.png) |
+| **Pose** — keypoint skeletons | **Captioning** — BLIP scene description |
 
 </div>
 
@@ -61,18 +65,18 @@ vision-language model for natural-language image captioning.
 
 <!-- ───────────────────────────────────────────────────────────── -->
 
-## 🧩 Features
+##  Features
 
 | Task | Model | Input | Output |
 |------|-------|:-----:|--------|
 | **Object detection** | YOLO26n (ONNX) | image / video | boxes + labels + confidence |
 | **Instance segmentation** | YOLO26n-seg (ONNX) | image / video | per-instance masks |
-| **Pose estimation** | YOLO26n-pose (ONNX) | image / video | 17-keypoint skeletons (confidence-gated) |
+| **Pose estimation** | YOLO26n-pose (ONNX) | image / video | keypoint skeletons (confidence-gated) |
 | **Multi-object tracking** | YOLO26n + BoT-SORT | video | persistent IDs + **per-class unique counts** |
 | **Image classification** | EfficientNet-B0 | image | top-5 ImageNet predictions |
 | **Image captioning** | BLIP | image | natural-language description |
 
-## 🚀 Highlights
+##  Highlights
 
 - **CPU-first performance** — all YOLO models exported to **ONNX Runtime** (operator fusion,
   static-shape graphs) for fast inference without a GPU.
@@ -102,34 +106,13 @@ Exporting to **ONNX Runtime cuts latency ~36%** (228 → 146 ms) via operator fu
 static-shape graphs — the model's speed advantage shows up at the runtime level, making
 real-time multi-task vision viable on commodity CPUs.
 
-## 🏗️ Architecture
 
-```
-                       ┌─────────────────────────────────────────────┐
-   Browser  ──────────▶│  Streamlit UI            (port 7860, public) │
-                       │    sidebar controls · preview · results card │
-                       └───────────────────────┬─────────────────────┘
-                                                │  HTTP (localhost)
-                       ┌────────────────────────▼─────────────────────┐
-                       │  FastAPI  /infer         (port 8000, internal)│
-                       │    ├─ model_loader   one model in RAM, swapped│
-                       │    ├─ models/*       YOLO26·ONNX, EfficientNet, BLIP
-                       │    ├─ _to_h264       browser-playable video   │
-                       │    └─ monitor        W&B per-inference logging│
-                       └───────────────────────────────────────────────┘
-                            both processes managed by supervisord
-```
+##  Tech Stack
 
-The UI is the only public port; it calls the FastAPI backend over `localhost` inside the
-same container. Metadata (detections + latency) is returned via an `X-Meta` response header,
-keeping media payloads clean.
-
-## 🛠️ Tech Stack
-
-**Inference:** Ultralytics YOLO26 · ONNX Runtime · BLIP (Hugging Face Transformers) · EfficientNet (torchvision)
-**Serving:** FastAPI · Uvicorn
+**Inference:** Ultralytics YOLO26, ONNX Runtime, BLIP (Hugging Face Transformers), EfficientNet (torchvision)
+**Serving:** FastAPI, Uvicorn
 **Interface:** Streamlit
-**Ops:** Docker · supervisord · Weights & Biases
+**Ops:** Docker, supervisord, Weights & Biases
 
 ## ⚡ Getting Started
 
@@ -146,51 +129,45 @@ uvicorn app.main:app --port 8000
 streamlit run ui/streamlit_app.py
 ```
 
-Open <http://localhost:8501>.
 
 ### Docker
 
 ```bash
-docker build -t cv-platform .
-docker run -p 7860:7860 cv-platform
+docker build -t vision-suite .
+docker run -p 7860:7860 vision-suite
 ```
 
 Open <http://localhost:7860>. The build **pre-bakes** all model weights into the image, so
 the first request is instant.
 
-## ☁️ Deployment (Hugging Face Spaces)
 
-This repo is Space-ready: the README front-matter sets `sdk: docker` and `app_port: 7860`.
-Push to a Docker Space and it builds and serves automatically — no extra config.
-
-## 📁 Project Structure
+##  Project Structure
 
 ```
-cv-platform/
+vision-suite/
 ├── app/
 │   ├── main.py                 # FastAPI app
 │   ├── routers/inference.py    # /infer endpoint, dispatch, video transcode
 │   └── services/
 │       ├── model_loader.py     # single-model-in-memory hot-swap
 │       └── monitor.py          # W&B logging
-├── models/                     # one module per task (detection, pose, segmenter, tracker, classifier, captioner)
+├── models/                     # 6 models
 ├── ui/
 │   ├── streamlit_app.py        # UI
-│   └── samples/                # bundled demo image + video
+│   └── samples/                # demo image + video
 ├── Dockerfile                  # one-container build, weights pre-baked
 ├── supervisord.conf            # runs API + UI together
 └── requirements.txt
 ```
 
-## 🗺️ Roadmap
+##  Future Work
 
-- [ ] Real-time webcam inference (`streamlit-webrtc`)
-- [ ] High-resolution video downscaling for faster throughput
-- [ ] Zero-shot open-vocabulary detection (YOLO-World)
-- [ ] Promptable segmentation (SAM)
+- Add Multimodal features
+- Real-time webcam inference - coming soon
+
 
 ---
 
 <div align="center">
-Built by <a href="https://smithasreddy.vercel.app">Smitha Reddy</a>
+Built by <a href="https://smithasreddy.vercel.app">Smitha S Reddy</a>
 </div>
