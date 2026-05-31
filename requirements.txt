@@ -1,0 +1,31 @@
+# CV
+torch
+torchvision
+ultralytics>=8.4.55
+transformers
+lap>=0.5.12
+#segment-anything
+mediapipe
+deep-sort-realtime
+opencv-python
+imageio-ffmpeg
+onnx
+onnxruntime
+onnxslim
+numpy
+pillow
+
+# API
+fastapi
+python-multipart
+uvicorn
+
+# Interface
+streamlit
+
+# Cloude 
+google-cloud-storage
+
+# monitoring
+wandb
+python-dotenv

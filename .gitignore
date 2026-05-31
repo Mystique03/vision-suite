@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+wheels/
+.eggs/
+.venv/
+venv/
+env/
+
+# Model weights
+weights/
+*.pt
+*.pth
+*.onnx
+*.bin
+*.safetensors
+
+# Output / temp
+output/
+tmp/
+
+# Credentials
+.env
+*.env
+service_account*.json
+credentials*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+#logs
+wandb/
+*.log
+
+# tests
+test-data/
