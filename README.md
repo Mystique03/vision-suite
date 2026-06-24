@@ -61,7 +61,7 @@ vision-language model for natural-language image captioning.
 
 </div>
 
-> _Live demo:_ **[🤗 Hugging Face Space](https://huggingface.co/spaces/<your-username>/cv-platform)** _(coming soon)_
+> _Live demo:_ **[🤗 Hugging Face Space](https://huggingface.co/spaces/Mystique03/vision-suite)**
 
 <!-- ───────────────────────────────────────────────────────────── -->
 
