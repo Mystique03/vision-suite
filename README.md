@@ -5,7 +5,6 @@ colorFrom: blue
 colorTo: indigo
 sdk: docker
 app_port: 7860
-pinned: false
 ---
 
 <div align="center">
@@ -36,13 +35,14 @@ Image Captioning | Object detection | Instance segmentation | Pose estimation | 
 image or video, pick a task, tune the thresholds, and get an annotated result with a live
 detections breakdown and the good news - all running on **CPU**, no GPU required.
 
-Built around **YOLO26** exported to **ONNX Runtime** for fast CPU inference, with a **BLIP**
-vision-language model for natural-language image captioning.
+> _Have a Look:_ https://huggingface.co/spaces/Mystique03/vision-suite
+
 
 <!-- ───────────────────────────────────────────────────────────── -->
 <!-- TODO: replace the placeholders below with real screenshots / GIFs -->
 
 ##  Demo
+
 
 <div align="center">
 
@@ -61,7 +61,6 @@ vision-language model for natural-language image captioning.
 
 </div>
 
-> _Live demo:_ **[🤗 Hugging Face Space](https://huggingface.co/spaces/Mystique03/vision-suite)**
 
 <!-- ───────────────────────────────────────────────────────────── -->
 
@@ -69,26 +68,21 @@ vision-language model for natural-language image captioning.
 
 | Task | Model | Input | Output |
 |------|-------|:-----:|--------|
-| **Object detection** | YOLO26n (ONNX) | image / video | boxes + labels + confidence |
-| **Instance segmentation** | YOLO26n-seg (ONNX) | image / video | per-instance masks |
-| **Pose estimation** | YOLO26n-pose (ONNX) | image / video | keypoint skeletons (confidence-gated) |
+| **Object detection** | YOLO26n  | image / video | boxes + labels + confidence |
+| **Instance segmentation** | YOLO26n-seg  | image / video | per-instance masks |
+| **Pose estimation** | YOLO26n-pose  | image / video | keypoint skeletons |
 | **Multi-object tracking** | YOLO26n + BoT-SORT | video | persistent IDs + **per-class unique counts** |
 | **Image classification** | EfficientNet-B0 | image | top-5 ImageNet predictions |
 | **Image captioning** | BLIP | image | natural-language description |
 
 ##  Highlights
 
-- **CPU-first performance** — all YOLO models exported to **ONNX Runtime** (operator fusion,
-  static-shape graphs) for fast inference without a GPU.
-- **Memory-efficient model loading** — a single-model-in-memory loader hot-swaps models on
-  demand and releases the previous one, keeping RAM bounded across all six tasks (fits free-tier hosting).
-- **Browser-ready video** — OpenCV `mp4v` output is transcoded to **H.264** so results play
-  inline in any browser.
+- **CPU-first performance** — all YOLO models exported to **ONNX Runtime**  for fast inference without a GPU.
+- **Browser-ready video** — OpenCV `mp4v` output is transcoded to **H.264** so results play inline in any browser.
 - **Tunable inference** — confidence & IoU thresholds are exposed in the UI and threaded
   end-to-end into the models.
 - **Observability** — every inference is logged to **Weights & Biases** (latency, confidence stats).
-- **One-container deploy** — FastAPI + Streamlit supervised in a single Docker image, weights
-  pre-baked at build time for instant cold starts.
+- **One-container deploy** — FastAPI + Streamlit supervised in a single Docker image, weights pre-baked at build time for instant cold starts.
 
 ## 📊 Performance
 
@@ -137,8 +131,7 @@ docker build -t vision-suite .
 docker run -p 7860:7860 vision-suite
 ```
 
-Open <http://localhost:7860>. The build **pre-bakes** all model weights into the image, so
-the first request is instant.
+Open <http://localhost:7860>.
 
 
 ##  Project Structure
@@ -149,7 +142,7 @@ vision-suite/
 │   ├── main.py                 # FastAPI app
 │   ├── routers/inference.py    # /infer endpoint, dispatch, video transcode
 │   └── services/
-│       ├── model_loader.py     # single-model-in-memory hot-swap
+│       ├── model_loader.py     
 │       └── monitor.py          # W&B logging
 ├── models/                     # 6 models
 ├── ui/
